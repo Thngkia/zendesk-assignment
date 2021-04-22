@@ -20,12 +20,12 @@ let carpark = (data) => {
   // initialise carpark objects
   let carLotsObj = new Map()
   for (let i = 1; i <= lots[0]; i++) {
-    let str = 'carLot' + i
+    let str = 'CarLot' + i
     carLotsObj.set(str, null)
   }
   let motorcycleLotsObj = new Map()
   for (let i = 1; i <= lots[1]; i++) {
-    let str = 'motorcycleLot' + i
+    let str = 'MotorcycleLot' + i
     motorcycleLotsObj.set(str, null)
   }
 
