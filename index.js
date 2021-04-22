@@ -13,22 +13,23 @@ fs.readFile(filePath, 'utf8', (err, data) => {
 
 // process file information
 let carpark = (data) => {
+  // filter lots in line 1 of data
   let arr = data.split('\n')
   let lots = arr[0].split(' ')
-  let carLots = lots[0]
-  let motorcycleLots = lots[1]
 
   // initialise carpark objects
   let carLotsObj = new Map()
-  for (let i = 1; i <= carLots; i++) {
+  for (let i = 1; i <= lots[0]; i++) {
     let str = 'carLot' + i
     carLotsObj.set(str, null)
   }
   let motorcycleLotsObj = new Map()
-  for (let i = 1; i <= motorcycleLots; i++) {
+  for (let i = 1; i <= lots[1]; i++) {
     let str = 'motorcycleLot' + i
     motorcycleLotsObj.set(str, null)
   }
+
+  // track occupied lots
   let occupiedCarLots = 0,
     occupiedMotorLots = 0
 
@@ -41,75 +42,103 @@ let carpark = (data) => {
         // switch statements for filtering car or motorcycle
         switch (details[1]) {
           case 'car':
-            // check if there are available lots
-            if (occupiedCarLots < carLots) {
-              occupiedCarLots++
-              // store the car in that particular lot
-              for (let [key, value] of carLotsObj.entries()) {
-                if (value === null) {
-                  carLotsObj.set(key, {
-                    plate: details[2],
-                    time: details[3],
-                  })
-                  console.log(`Accept ${key}`)
-                  break
-                }
-              }
-            } else {
-              // reject if no lots are available
-              console.log('Reject')
-              break
-            }
+            handleCarEntrance(occupiedCarLots, carLotsObj, details)
             break
           case 'motorcycle':
-            if (occupiedMotorLots < motorcycleLots) {
-              occupiedMotorLots++
-              for (let [key, value] of motorcycleLotsObj.entries()) {
-                if (value === null) {
-                  motorcycleLotsObj.set(key, {
-                    plate: details[2],
-                    time: details[3],
-                  })
-                  console.log(`Accept ${key}`)
-                  break
-                }
-              }
-            } else {
-              console.log('Reject')
-              break
-            }
+            handleMotorcycleEntrance(
+              occupiedMotorLots,
+              motorcycleLotsObj,
+              details
+            )
             break
         }
         break
       case 'Exit':
-        // check if the plate belongs to car or motorcycle
-        let licensePlate = details[1]
-        let exitTime = details[2]
-        let type = null
-        // check if car is exiting and print the fee
-        for (let [key, value] of carLotsObj.entries()) {
-          if (value && licensePlate === value.plate) {
-            type = 'car'
-            let timeSpent = exitTime - value.time
-            let cost = Math.ceil(timeSpent / 3600) * 2
-            console.log(key, cost)
-            carLotsObj.set(key, null)
-            break
-          }
-        }
-        // otherwise find the motorcycle and print the fee
-        if (!type) {
-          for (let [key, value] of motorcycleLotsObj.entries()) {
-            if (licensePlate === value.plate) {
-              let timeSpent = exitTime - value.time
-              let cost = Math.ceil(timeSpent / 3600) * 1
-              console.log(key, cost)
-              motorcycleLotsObj.set(key, null)
-              break
-            }
-          }
-        }
+        handleExit(carLotsObj, motorcycleLotsObj, details)
         break
     }
   }
+  return
 }
+
+let handleCarEntrance = (occupiedCarLots, carLotsObj, details) => {
+  if (occupiedCarLots < carLotsObj.size) {
+    occupiedCarLots++
+    // store the car in that particular lot
+    for (let [key, value] of carLotsObj.entries()) {
+      if (value === null) {
+        carLotsObj.set(key, {
+          plate: details[2],
+          time: details[3],
+        })
+        console.log(`Accept ${key}`)
+        break
+      }
+    }
+  } else {
+    // reject if no lots are available
+    console.log('Reject')
+  }
+  return
+}
+
+let handleMotorcycleEntrance = (
+  occupiedMotorLots,
+  motorcycleLotsObj,
+  details
+) => {
+  if (occupiedMotorLots < motorcycleLotsObj.size) {
+    occupiedMotorLots++
+    for (let [key, value] of motorcycleLotsObj.entries()) {
+      if (value === null) {
+        motorcycleLotsObj.set(key, {
+          plate: details[2],
+          time: details[3],
+        })
+        console.log(`Accept ${key}`)
+        break
+      }
+    }
+  } else {
+    console.log('Reject')
+  }
+  return
+}
+
+let handleExit = (carLotsObj, motorcycleLotsObj, details) => {
+  let licensePlate = details[1]
+  let exitTime = details[2]
+  let type = null
+  // check if car is exiting and print the fee
+  for (let [key, value] of carLotsObj.entries()) {
+    if (value && licensePlate === value.plate) {
+      type = 'car'
+      let timeSpent = exitTime - value.time
+      let cost = Math.ceil(timeSpent / 3600) * 2
+      console.log(key, cost)
+      carLotsObj.set(key, null)
+      break
+    }
+  }
+  // otherwise find the motorcycle and print the fee
+  if (!type) {
+    for (let [key, value] of motorcycleLotsObj.entries()) {
+      if (licensePlate === value.plate) {
+        let timeSpent = exitTime - value.time
+        let cost = Math.ceil(timeSpent / 3600) * 1
+        console.log(key, cost)
+        motorcycleLotsObj.set(key, null)
+        break
+      }
+    }
+  }
+  return
+}
+
+function sum(a, b) {
+  return a + b
+}
+
+module.exports.sum = sum
+module.exports.handleCarEntrance = handleCarEntrance
+module.exports.handleExit = handleExit
