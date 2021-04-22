@@ -135,10 +135,5 @@ let handleExit = (carLotsObj, motorcycleLotsObj, details) => {
   return
 }
 
-function sum(a, b) {
-  return a + b
-}
-
-module.exports.sum = sum
 module.exports.handleCarEntrance = handleCarEntrance
 module.exports.handleExit = handleExit
